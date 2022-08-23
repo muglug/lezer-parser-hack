@@ -27,8 +27,8 @@
     "url" : "https://github.com/lezer-parser/php.git"
   },
   "scripts": {
-    "build": "lezer-generator src/php.grammar -o src/parser && rollup -c",
-    "build-debug": "lezer-generator src/php.grammar --names -o src/parser && rollup -c",
+    "build": "lezer-generator src/hack.grammar -o src/parser && rollup -c",
+    "build-debug": "lezer-generator src/hack.grammar --names -o src/parser && rollup -c",
     "prepare": "npm run build",
     "test": "mocha test/test-*.js"
   }

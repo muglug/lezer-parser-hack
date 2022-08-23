@@ -1,13 +1,12 @@
 import {styleTags, tags as t} from "@lezer/highlight"
 
-export const phpHighlighting = styleTags({
+export const hackHighlighting = styleTags({
   "Visibility abstract final static": t.modifier,
   "for foreach while do if else elseif switch try catch finally return throw break continue default case": t.controlKeyword,
-  "endif endfor endforeach endswitch endwhile declare enddeclare goto match": t.controlKeyword,
-  "and or xor yield unset clone instanceof insteadof": t.operatorKeyword,
-  "function fn class trait implements extends const enum global interface use var": t.definitionKeyword,
+  "and or xor yield unset clone is as": t.operatorKeyword,
+  "function class trait implements extends const enum global interface use var": t.definitionKeyword,
   "include include_once require require_once namespace": t.moduleKeyword,
-  "new from echo print array list as": t.keyword,
+  "new from echo print dict vec list as": t.keyword,
   null: t.null,
   Boolean: t.bool,
   VariableName: t.variableName,

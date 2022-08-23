@@ -1,0 +1,901 @@
+@top Script {
+  token_2? statement*
+}
+
+keyword {
+  kw<"type"> |
+  kw<"newtype"> |
+  kw<"shape"> |
+  kw<"tuple"> |
+  kw<"clone"> |
+  kw<"new"> |
+  kw<"print"> |
+  kw<"namespace"> |
+  primitiveType |
+  collectionType
+}
+
+QualifiedIdentifier {
+  (Identifier | kw<"namespace">)? ("\\" Identifier)+ |
+  Identifier
+}
+
+ScopedIdentifier {
+  (QualifiedIdentifier | Variable | ScopeIdentifier | xhpIdentifier | PipeVariable) "::" (Identifier | Variable)
+}
+
+ScopeIdentifier {
+  kw<"self"> |
+  kw<"parent"> |
+  kw<"static">
+}
+
+variablish {
+  Variable |
+  PipeVariable |
+  ListExpression |
+  SubscriptExpression |
+  QualifiedIdentifier |
+  ParenthesizedExpression |
+  CallExpression |
+  ScopedIdentifier |
+  ScopeIdentifier |
+  SelectionExpression |
+  xhpIdentifier
+}
+
+statement {
+  declaration |
+  CompoundStatement |
+  EmptyStatement |
+  ExpressionStatement |
+  ReturnStatement |
+  BreakStatement |
+  ContinueStatement |
+  ThrowStatement |
+  EchoStatement |
+  UnsetStatement |
+  UseStatement |
+  IfStatement |
+  WhileStatement |
+  DoStatement |
+  ForStatement |
+  SwitchStatement |
+  ForeachStatement |
+  TryStatement |
+  ConcurrentStatement |
+  UsingStatement
+}
+
+declaration {
+  FunctionDeclaration |
+  ClassDeclaration |
+  InterfaceDeclaration |
+  TraitDeclaration |
+  AliasDeclaration |
+  EnumDeclaration |
+  AbstractEnumClassDeclaration |
+  EnumClassDeclaration |
+  NamespaceDeclaration |
+  ConstDeclaration
+}
+
+Heredoc {
+  "<<<" heredocStart heredocStartNewline? (heredocBody | Variable | EmbeddedBracedExpression)* heredocEndNewline? heredocEnd
+}
+
+EmbeddedBracedExpression {
+  embeddedOpeningBrace (Variable | CallExpression | SubscriptExpression | SelectionExpression) "}"
+}
+
+BracedExpression {
+  "{" expression "}"
+}
+
+expression {
+  Heredoc |
+  Array |
+  Tuple |
+  Shape |
+  Collection |
+  literal |
+  variablish |
+  PrefixedString |
+  ParenthesizedExpression |
+  BinaryExpression |
+  PrefixUnaryExpression |
+  PostfixUnaryExpression |
+  IsExpression |
+  AsExpression |
+  AwaitableExpression |
+  YieldExpression |
+  CastExpression |
+  TernaryExpression |
+  LambdaExpression |
+  CallExpression |
+  SelectionExpression |
+  NewExpression |
+  IncludeExpression |
+  RequireExpression |
+  AnonymousFunctionExpression |
+  XhpExpression |
+  FunctionPointer |
+  EnumClassLabel
+}
+
+ExpressionStatement {
+  expression ";"
+}
+
+CompoundStatement {
+  "{" statement* "}"
+}
+
+ReturnStatement {
+  kw<"return"> expression? ";"
+}
+
+BreakStatement {
+  kw<"break"> expression? ";"
+}
+
+ContinueStatement {
+  kw<"continue"> expression? ";"
+}
+
+ThrowStatement {
+  kw<"throw"> expression ";"
+}
+
+EchoStatement {
+  kw<"echo"> expression ("," expression)* ";"
+}
+
+UnsetStatement {
+  kw<"unset"> "(" (variablish ("," variablish)*)? ")" ";"
+}
+
+ConcurrentStatement {
+  kw<"concurrent"> CompoundStatement
+}
+
+UseStatement {
+  kw<"use"> (UseClause ("," UseClause)* ","? | UseType? namespaceIdentifier "{" UseClause ("," UseClause)* ","? "}") ";"
+}
+
+UseType {
+  kw<"namespace"> |
+  kw<"function"> |
+  kw<"type"> |
+  kw<"const">
+}
+
+UseClause {
+  UseType? namespaceIdentifier (kw<"as"> Identifier)?
+}
+
+namespaceIdentifier {
+  QualifiedIdentifier "\\"? |
+  "\\"
+}
+
+IfStatement /* precedence: right -1 */ {
+  kw<"if"> ParenthesizedExpression statement (kw<"else"> kw<"if"> ParenthesizedExpression statement)* (kw<"else"> statement)?
+}
+
+SwitchStatement {
+  kw<"switch"> ParenthesizedExpression "{" (SwitchCase | SwitchDefault)* "}"
+}
+
+SwitchCase {
+  kw<"case"> expression ":" statement*
+}
+
+SwitchDefault {
+  kw<"default"> ":" statement*
+}
+
+ForeachStatement {
+  kw<"foreach"> "(" expression AwaitModifier? token_3 (variablish "=>")? variablish ")" statement
+}
+
+WhileStatement {
+  kw<"while"> ParenthesizedExpression statement
+}
+
+DoStatement {
+  kw<"do"> statement kw<"while"> ParenthesizedExpression ";"
+}
+
+ForStatement {
+  kw<"for"> "(" (expression ("," expression)*)? ";" (expression ("," expression)*)? ";" (expression ("," expression)*)? ")" statement
+}
+
+TryStatement {
+  kw<"try"> CompoundStatement CatchClause* (CatchClause | FinallyClause)
+}
+
+CatchClause {
+  kw<"catch"> "(" type Variable ")" CompoundStatement
+}
+
+FinallyClause {
+  kw<"finally"> CompoundStatement
+}
+
+UsingStatement /* precedence: right -1 */ {
+  AwaitModifier? kw<"using"> (ExpressionStatement | "(" expression ("," expression)* ")" (CompoundStatement | ";"))
+}
+
+literal {
+  String |
+  Integer |
+  Float |
+  True |
+  False |
+  Null
+}
+
+True {
+  kw<"true"> |
+  kw<"True"> |
+  kw<"TRUE">
+}
+
+False {
+  kw<"false"> |
+  kw<"False"> |
+  kw<"FALSE">
+}
+
+Null {
+  kw<"null"> |
+  kw<"Null"> |
+  kw<"NULL">
+}
+
+PrefixedString {
+  Identifier String
+}
+
+type {
+  TypeSpecifier |
+  TypeConstant |
+  ShapeTypeSpecifier |
+  FunctionTypeSpecifier |
+  TupleTypeSpecifier
+}
+
+TypeSpecifier {
+  typeModifier* (primitiveType | QualifiedIdentifier | collectionType | xhpIdentifier) TypeArguments?
+}
+
+typeModifier {
+  SoftModifier { "@" } |
+  NullableModifier { "?" } |
+  LikeModifier { "~" }
+}
+
+TupleTypeSpecifier {
+  typeModifier* "(" type ("," type)* ","? ")"
+}
+
+FunctionTypeSpecifier {
+  typeModifier* "(" kw<"function"> token_4 "(" (InoutModifier? type VariadicModifier? ("," InoutModifier? type VariadicModifier?)* ","?)? ")" CapabilityList? ":" type ")"
+}
+
+ShapeTypeSpecifier {
+  typeModifier* kw<"shape"> "(" ((FieldSpecifier | OpenModifier { "..." }) ("," (FieldSpecifier | OpenModifier { "..." }))* ","?)? ")"
+}
+
+FieldSpecifier {
+  OptionalModifier { "?" }? expression "=>" type
+}
+
+TypeConstant {
+  typeModifier* TypeConstant { typeConstant }
+}
+
+typeConstant {
+  (QualifiedIdentifier | TypeConstant { typeConstant }) "::" Identifier
+}
+
+collectionType {
+  kw<"array"> |
+  kw<"varray"> |
+  kw<"darray"> |
+  kw<"vec"> |
+  kw<"dict"> |
+  kw<"keyset">
+}
+
+primitiveType {
+  kw<"bool"> |
+  kw<"float"> |
+  kw<"int"> |
+  kw<"string"> |
+  kw<"arraykey"> |
+  kw<"void"> |
+  kw<"nonnull"> |
+  Null |
+  kw<"mixed"> |
+  kw<"dynamic"> |
+  kw<"noreturn">
+}
+
+TypeArguments {
+  "<" (type ("," type)* ","?)? ">"
+}
+
+TypeParameters {
+  "<" TypeParameter ("," TypeParameter)* ","? ">"
+}
+
+TypeParameter {
+  AttributeModifier? (CovariantModifier { "+" } | ContravariantModifier { "-" } | ReifyModifier { kw<"reify"> })? Identifier ((kw<"as"> | kw<"super">) type)*
+}
+
+WhereClause {
+  kw<"where"> (WhereConstraint ","?)+
+}
+
+WhereConstraint {
+  type (kw<"as"> | kw<"super"> | "=") type
+}
+
+Array {
+  ArrayType { collectionType } TypeArguments? "[" ((expression | ElementInitializer) ("," (expression | ElementInitializer))* ","?)? "]"
+}
+
+ElementInitializer /* precedence: right 0 */ {
+  expression "=>" expression
+}
+
+Tuple {
+  kw<"tuple"> "(" (expression ("," expression)* ","?)? ")"
+}
+
+Shape {
+  kw<"shape"> "(" (FieldInitializer ("," FieldInitializer)* ","?)? ")"
+}
+
+FieldInitializer {
+  (String | ScopedIdentifier) "=>" expression
+}
+
+Collection {
+  QualifiedIdentifier "{" ((expression | ElementInitializer) ("," (expression | ElementInitializer))* ","?)? "}"
+}
+
+IncludeExpression /* precedence: left 0 */ {
+  (kw<"include"> | kw<"include_once">) expression
+}
+
+RequireExpression /* precedence: left 0 */ {
+  (kw<"require"> | kw<"require_once">) expression
+}
+
+ParenthesizedExpression {
+  "(" expression ")"
+}
+
+SubscriptExpression /* precedence: left 24 */ {
+  expression "[" expression? "]"
+}
+
+commaSep<content> { "" | content ("," content?)* }
+
+ListExpression {
+  kw<"list"> ValueList { "(" ","? commaSep<expression> ")" }
+}
+
+@precedence {
+  print @right,
+  not @right,
+  tilde @right,
+  negative @right,
+  positive @right,
+  plusplus @right,
+  minusminus @right,
+  at @right,
+  await @right,
+  clone @right,
+
+
+  ampersandequals @right,
+  barequals @right,
+  caretequals @right,
+  divideequals @right,
+  dotequals @right,
+  equals @right,
+  exponentequals @right,
+  minusequals @right,
+  moduloequals @right,
+  multiplyequals @right,
+  plusequals @right,
+  questionquestionequals @right,
+  shiftleftequals @right,
+  shiftrightequals @right,
+
+  pipe @left,
+  questionmarkcolon @left,
+  questionquestion @right
+  bar @left,
+  ampersand @left,
+  barbar @left,
+  caret @left,
+  ampersandampersand @left,
+  equalequal @left,
+  equalsequalsequals @left,
+  notequal @left,
+  notequalsequals @left,
+  greaterthanequal @left,
+  lessthan @left,
+  lessthan @left,
+  lessthanequal @left,
+  spaceship @left,
+  shiftleft @left,
+  shiftleft @left,
+  concat @left,
+  minus @left,
+  plus @left,
+  divide @left,
+  modulo @left,
+  multiply @left,
+  exponent @right
+}
+
+BinaryExpression {
+  (expression !pipe "|>" expression) |
+  (expression !questionquestion "??" expression) |
+  (expression !barbar "||" expression) |
+  (expression !ampersandampersand "&&" expression) |
+  (expression !bar "|" expression) |
+  (expression !caret "^" expression) |
+  (expression !ampersand "&" expression) |
+  (expression !equalequal "==" expression) |
+  (expression !notequal "!=" expression) |
+  (expression !equalsequalsequals "===" expression) |
+  (expression !notequalsequals "!==" expression) |
+  (expression !lessthan "<" expression) |
+  (expression !lessthan ">" expression) |
+  (expression !lessthanequal "<=" expression) |
+  (expression !greaterthanequal ">=" expression) |
+  (expression !spaceship "<=>" expression) |
+  (expression !shiftleft "<<" expression) |
+  (expression !shiftleft ">>" expression) |
+  (expression !plus "+" expression) |
+  (expression !minus "-" expression) |
+  (expression !concat "." expression) |
+  (expression !multiply "*" expression) |
+  (expression !divide "/" expression) |
+  (expression !modulo "%" expression) |
+  (expression !exponent "**" expression) |
+  (expression !questionmarkcolon "?:" expression) |
+  (expression !equals "=" expression) |
+  (expression !questionquestionequals "??=" expression) |
+  (expression !dotequals ".=" expression) |
+  (expression !barequals "|=" expression) |
+  (expression !caretequals "^=" expression) |
+  (expression !ampersandequals "&=" expression) |
+  (expression !shiftleftequals "<<=" expression) |
+  (expression !shiftrightequals ">>=" expression) |
+  (expression !plusequals "+=" expression) |
+  (expression !minusequals "-=" expression) |
+  (expression !multiplyequals "*=" expression) |
+  (expression !divideequals "/=" expression) |
+  (expression !moduloequals "%=" expression) |
+  (expression !exponentequals "**=" expression)
+}
+
+PrefixUnaryExpression {
+  (!not "!" expression) |
+  (!tilde "~" expression) |
+  (!negative "-" expression) |
+  (!positive "+" expression) |
+  (!plusplus "++" expression) |
+  (!minusminus "--" expression) |
+  (!print kw<"print"> expression) |
+  (!clone kw<"clone"> expression) |
+  (!await kw<"await"> expression) |
+  (!at "@" expression)
+}
+
+PostfixUnaryExpression /* precedence: right 19 */ {
+  expression ("++" | "--")
+}
+
+IsExpression /* precedence: left 17 */ {
+  expression kw<"is"> type
+}
+
+AsExpression /* precedence: left 17 */ {
+  expression (token_5 | "?as") type
+}
+
+AwaitableExpression {
+  kw<"async"> CompoundStatement
+}
+
+YieldExpression /* precedence: right 0 */ {
+  kw<"yield"> (expression | ElementInitializer)
+}
+
+CastExpression /* precedence: right 18 */ {
+  "(" (kw<"array"> | kw<"int"> | kw<"float"> | kw<"string"> | kw<"bool">) ")" expression
+}
+
+TernaryExpression /* precedence: left 4 */ {
+  expression "?" expression ":" expression
+}
+
+LambdaExpression {
+  AttributeModifier? AsyncModifier? (Parameters { singleParameterParameters } | Parameters CapabilityList? (":" type)?) "==>" (expression | CompoundStatement)
+}
+
+singleParameterParameters {
+  Parameter { singleParameter }
+}
+
+singleParameter {
+  Variable
+}
+
+CallExpression /* precedence: left 21 */ {
+  (expression | collectionType) TypeArguments? Arguments
+}
+
+NewExpression /* precedence: 22 */ {
+  kw<"new"> variablish TypeArguments? Arguments
+}
+
+Arguments {
+  "(" (Argument ("," Argument)* ","?)? ")"
+}
+
+Argument {
+  (InoutModifier | VariadicModifier)? expression
+}
+
+SelectionExpression /* precedence: left 23 */ {
+  (variablish | AsExpression) ("?->" | "->") (variablish | BracedExpression | Identifier { keyword })
+}
+
+AliasDeclaration {
+  AttributeModifier? (kw<"type"> | kw<"newtype">) Identifier TypeParameters? (kw<"as"> type)? "=" type ";"
+}
+
+FunctionDeclaration {
+  AttributeModifier? functionDeclarationHeader (CompoundStatement | ";")
+}
+
+functionDeclarationHeader {
+  AsyncModifier? kw<"function"> Identifier TypeParameters? Parameters CapabilityList? (":" AttributeModifier? type)? WhereClause?
+}
+
+CapabilityList {
+  "[" (Capability ("," Capability)*)? "]"
+}
+
+Capability {
+  Identifier TypeParameters? |
+  ScopedIdentifier |
+  kw<"ctx"> Variable
+}
+
+Parameters /* precedence: left 21 */ {
+  "(" (VariadicModifier | Parameter ("," Parameter)* ","?)? ")"
+}
+
+Parameter {
+  AttributeModifier? VisibilityModifier? InoutModifier? type? VariadicModifier? Variable ("=" expression)?
+}
+
+TraitDeclaration {
+  AttributeModifier? kw<"trait"> Identifier TypeParameters? ImplementsClause? WhereClause? MemberDeclarations
+}
+
+InterfaceDeclaration {
+  AttributeModifier? kw<"interface"> Identifier TypeParameters? ExtendsClause? WhereClause? MemberDeclarations
+}
+
+ClassDeclaration {
+  AttributeModifier? classModifier? classModifier? XhpModifier? kw<"class"> (Identifier | xhpIdentifier) TypeParameters? ExtendsClause? ImplementsClause? WhereClause? MemberDeclarations
+}
+
+MemberDeclarations {
+  "{" (ConstDeclaration { classConstDeclaration } | MethodDeclaration | PropertyDeclaration | TypeConstDeclaration | ContextConstDeclaration | TraitUseClause | RequireImplementsClause | RequireExtendsClause | XhpAttributeDeclaration | XhpChildrenDeclaration | XhpCategoryDeclaration)* "}"
+}
+
+TraitUseClause {
+  kw<"use"> type ("," type)* ("{" ((TraitSelectClause | TraitAliasClause) ";")* "}" | ";")
+}
+
+TraitSelectClause {
+  QualifiedIdentifier "::" Identifier kw<"insteadof"> QualifiedIdentifier ("," QualifiedIdentifier)*
+}
+
+TraitAliasClause {
+  Identifier kw<"as"> (VisibilityModifier Identifier? | VisibilityModifier? Identifier)
+}
+
+ExtendsClause {
+  kw<"extends"> type ("," type)*
+}
+
+ImplementsClause {
+  kw<"implements"> type ("," type)*
+}
+
+RequireExtendsClause {
+  kw<"require"> kw<"extends"> type ("," type)* ";"
+}
+
+RequireImplementsClause {
+  kw<"require"> kw<"implements"> type ("," type)* ";"
+}
+
+MethodDeclaration {
+  AttributeModifier? memberModifier* functionDeclarationHeader (CompoundStatement | ";")
+}
+
+classConstDeclaration {
+  memberModifier* kw<"const"> type? ConstDeclarator { classConstDeclarator } ("," ConstDeclarator { classConstDeclarator })* ";"
+}
+
+classConstDeclarator {
+  (Identifier | Identifier { keyword }) ("=" expression)?
+}
+
+TypeConstDeclaration {
+  AttributeModifier? memberModifier* kw<"const"> kw<"type"> Identifier TypeParameters? (kw<"as"> type)? ("=" type)? ";"
+}
+
+ContextConstDeclaration {
+  AbstractModifier? kw<"const"> kw<"ctx"> Identifier (kw<"super"> CapabilityList)? (kw<"as"> CapabilityList)? ("=" CapabilityList)? ";"
+}
+
+ConstDeclaration {
+  kw<"const"> type? ConstDeclarator ("," ConstDeclarator)* ";"
+}
+
+ConstDeclarator {
+  (Identifier | Identifier { keyword }) "=" expression
+}
+
+PropertyDeclaration {
+  AttributeModifier? memberModifier* type? PropertyDeclarator ("," PropertyDeclarator)* ";"
+}
+
+PropertyDeclarator {
+  Variable ("=" expression)?
+}
+
+EnumDeclaration {
+  AttributeModifier? kw<"enum"> Identifier ":" type (kw<"as"> type)? "{" Enumerator* "}"
+}
+
+AbstractEnumClassDeclaration {
+  AttributeModifier? kw<"abstract"> kw<"enum"> kw<"class"> Identifier ":" ExtendsClause? type "{" (TypedEnumerator | kw<"abstract"> type Identifier ";")* "}"
+}
+
+EnumClassDeclaration {
+  AttributeModifier? kw<"enum"> kw<"class"> Identifier ":" type ExtendsClause? "{" TypedEnumerator* "}"
+}
+
+EnumClassLabel {
+  QualifiedIdentifier? "#" Identifier
+}
+
+Enumerator {
+  Identifier "=" expression ";"
+}
+
+TypedEnumerator {
+  type Enumerator
+}
+
+NamespaceDeclaration /* precedence: right 0 */ {
+  kw<"namespace"> (QualifiedIdentifier ";" | QualifiedIdentifier? CompoundStatement)?
+}
+
+memberModifier {
+  VisibilityModifier |
+  StaticModifier |
+  AbstractModifier |
+  FinalModifier
+}
+
+classModifier {
+  AbstractModifier |
+  FinalModifier
+}
+
+FinalModifier {
+  kw<"final">
+}
+
+AbstractModifier {
+  kw<"abstract">
+}
+
+XhpModifier {
+  kw<"xhp">
+}
+
+StaticModifier {
+  kw<"static">
+}
+
+VisibilityModifier {
+  kw<"public"> |
+  kw<"protected"> |
+  kw<"private">
+}
+
+AttributeModifier {
+  "<<" QualifiedIdentifier Arguments? ("," QualifiedIdentifier Arguments?)* ","? ">>"
+}
+
+InoutModifier {
+  kw<"inout">
+}
+
+AsyncModifier {
+  kw<"async">
+}
+
+AwaitModifier {
+  kw<"await">
+}
+
+xhpIdentifier {
+  XhpIdentifier |
+  XhpClassIdentifier
+}
+
+XhpExpression {
+  XhpOpenClose |
+  XhpOpen (XhpString | XhpComment | BracedExpression | XhpExpression)* XhpClose
+}
+
+XhpOpen {
+  "<" xhpIdentifier XhpAttribute* ">"
+}
+
+XhpOpenClose {
+  "<" xhpIdentifier XhpAttribute* "/>"
+}
+
+XhpClose {
+  "</" xhpIdentifier ">"
+}
+
+XhpAttribute {
+  XhpIdentifier "=" (String | BracedExpression) |
+  BracedExpression |
+  XhpSpreadExpression
+}
+
+XhpSpreadExpression {
+  "{" "..." expression "}"
+}
+
+XhpAttributeDeclaration {
+  kw<"attribute"> XhpClassAttribute ("," XhpClassAttribute)* ";"
+}
+
+XhpClassAttribute {
+  (type | XhpEnumType) XhpIdentifier? ("=" expression)? ("@required" | "@lateinit")?
+}
+
+XhpEnumType {
+  kw<"enum"> "{" (String | Integer) ("," (String | Integer))* ","? "}"
+}
+
+xhpAttributeExpression {
+  XhpIdentifier |
+  XhpClassIdentifier |
+  XhpCategoryIdentifier |
+  BinaryExpression { xhpBinaryExpression } |
+  PostfixUnaryExpression { xhpPostfixUnaryExpression } |
+  ParenthesizedExpression { xhpParenthesizedExpression }
+}
+
+FunctionPointer /* precedence: dynamic -1 */ {
+  (ScopedIdentifier | QualifiedIdentifier) TypeArguments
+}
+
+AnonymousFunctionExpression {
+  AsyncModifier? kw<"function"> Parameters CapabilityList? (":" type)? UseClause { anonymousFunctionUseClause }? CompoundStatement
+}
+
+anonymousFunctionUseClause {
+  kw<"use"> "(" Variable ("," Variable)* ","? ")"
+}
+
+XhpChildrenDeclaration {
+  kw<"children"> xhpAttributeExpression ("," xhpAttributeExpression)* ";"
+}
+
+XhpCategoryDeclaration {
+  kw<"category"> XhpCategoryIdentifier ("," XhpCategoryIdentifier)* ";"
+}
+
+xhpBinaryExpression /* precedence: left 0 */ {
+  xhpAttributeExpression "|" xhpAttributeExpression
+}
+
+xhpPostfixUnaryExpression /* precedence: 1 */ {
+  xhpAttributeExpression ("+" | "*" | "?")
+}
+
+xhpParenthesizedExpression {
+  "(" xhpAttributeExpression ("," xhpAttributeExpression)* ")"
+}
+
+kw<term> { @specialize[@name={term}]<Identifier, term> }
+
+@skip { token_1 | Comment }
+
+@external tokens token from "./tokens" { heredocStart, heredocStartNewline, heredocBody, heredocEndNewline, heredocEnd, embeddedOpeningBrace }
+
+@tokens {
+  token_1 {
+    $[ \t\r\n]
+  }
+  token_2 {
+    "<\\?" $[hH] $[hH]
+  }
+  Identifier {
+    $[a-zA-Z_\x80-\xff] $[a-zA-Z0-9_\x80-\xff]*
+  }
+  Variable {
+    "$" $[a-zA-Z_\x80-\xff] $[a-zA-Z0-9_\x80-\xff]*
+  }
+  PipeVariable {
+    "$$"
+  }
+  EmptyStatement {
+    ";"
+  }
+  token_3 /* precedence: dynamic 1 */ {
+    "as"
+  }
+  Float {
+    $[0-9]+ "\\." $[0-9]* ($[eE] $[+-]? $[0-9]+)? | $[0-9]* "\\." $[0-9]+ ($[eE] $[+-]? $[0-9]+)? | $[0-9]+ $[eE] $[+-]? $[0-9]+
+  }
+  Integer {
+    $[1-9] $[0-9]* | "0" $[0-7]* | "0" $[xX] $[0-9a-fA-F]+ | "0" $[bB] $[01]+
+  }
+  String {
+    "'" ("\\\\'" | "\\\\\\\\" | "\\\\"? !['\\])* "'" | "\"" ("\\\\\"" | "\\\\\\\\" | "\\\\"? !["\\])* "\""
+  }
+  token_4 {
+    $[ \t\r\n]*
+  }
+  token_5 /* precedence: dynamic -1 */ {
+    "as"
+  }
+  VariadicModifier {
+    "..."
+  }
+  XhpIdentifier {
+    $[a-zA-Z_] $[a-zA-Z0-9_]* ($[-:] $[a-zA-Z0-9_]+)*
+  }
+  XhpClassIdentifier {
+    ":" $[a-zA-Z_] $[a-zA-Z0-9_]* ($[-:] $[a-zA-Z0-9_]+)*
+  }
+  XhpCategoryIdentifier {
+    "%" $[a-zA-Z_] $[a-zA-Z0-9_]* ($[-:] $[a-zA-Z0-9_]+)*
+  }
+  XhpComment {
+    "<!--" ("-"? ">")? (![>] | ![-] ">" | ![-] "->")* "-->"
+  }
+  XhpString /* precedence: 1 */ {
+    ![<{]+
+  }
+  Comment {
+    "//" ![\n]* | "/*" ![*]* "\\*"+ (![/*] ![*]* "\\*"+)* "/"
+  }
+}
